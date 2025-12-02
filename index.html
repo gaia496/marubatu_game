@@ -3,28 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>〇×ゲーム</title>
-    <link rel="stylesheet" href="style.css"> 
+    <title>AI対戦 〇×ゲーム</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>🎮 〇×ゲーム (三目並べ)</h1>
+    <div class="container">
+        <div id="home-screen">
+            <h1>🎮 AI対戦 〇×ゲーム</h1>
+            <p>盤面のサイズを選んでスタート！</p>
+            
+            <div class="menu-buttons">
+                <button id="btn-3x3" class="menu-btn">
+                    <span class="btn-title">3 × 3</span>
+                    <span class="btn-desc">基本のモード</span>
+                </button>
 
-    <div id="message">〇のターンです</div>
+                <button id="btn-4x4" class="menu-btn">
+                    <span class="btn-title">4 × 4</span>
+                    <span class="btn-desc">ちょっと難しい</span>
+                </button>
+            </div>
+        </div>
 
-    <div id="board">
-        <div class="cell" data-index="0"></div>
-        <div class="cell" data-index="1"></div>
-        <div class="cell" data-index="2"></div>
-        <div class="cell" data-index="3"></div>
-        <div class="cell" data-index="4"></div>
-        <div class="cell" data-index="5"></div>
-        <div class="cell" data-index="6"></div>
-        <div class="cell" data-index="7"></div>
-        <div class="cell" data-index="8"></div>
+        <div id="game-screen" style="display: none;">
+            <h2 id="game-title">3x3 マッチ</h2>
+            <div id="message">あなたのターンです</div>
+
+            <div id="board" class="board"></div>
+
+            <button id="back-button">🏠 ホームに戻る</button>
+        </div>
     </div>
-
-    <button id="reset-button">ゲームをリセット</button>
-    
     <script src="script.js"></script>
 </body>
 </html>

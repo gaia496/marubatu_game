@@ -1,81 +1,105 @@
 /* style.css */
 body {
-    /* 全体のフォント、配置を設定 */
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    text-align: center;
-    background-color: #f4f4f9;
-    padding: 20px;
-}
-
-h1 {
-    color: #333;
-}
-
-#message {
-    /* メッセージエリアのデザイン */
-    font-size: 24px;
-    font-weight: bold;
-    margin: 20px 0;
-    color: #007bff; /* 青色で強調 */
-}
-
-#board {
-    /* 3x3のグリッドを作成 */
-    display: grid;
-    grid-template-columns: repeat(3, 100px); /* 100px幅の列を3つ */
-    grid-template-rows: repeat(3, 100px);    /* 100px高さの行を3つ */
-    gap: 8px; /* マス間の隙間を少し広めに */
-    margin: 0 auto 30px auto; /* 盤面を中央に配置 */
-    width: 316px; /* 100*3 + 8*2 */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* 影をつけて立体感を出す */
-    background-color: #fff;
-    border-radius: 5px;
-    padding: 5px;
-}
-
-.cell {
-    /* 各マスの基本的な見た目 */
-    width: 100px;
-    height: 100px;
-    border: 1px solid #ccc;
-    background-color: #ffffff; 
-    cursor: pointer; /* マウスオーバー時に指のマークを出す */
-    
-    /* 〇や×をマスの中心に表示 */
+    font-family: 'Segoe UI', sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 60px; /* 文字を大きく */
-    font-weight: bolder;
-    transition: background-color 0.1s; /* 色が変わるのをスムーズに */
+    min-height: 100vh;
+    background-color: #eef2f3;
+    margin: 0;
 }
 
-.cell:hover {
-    /* マウスが乗ったときの色 */
-    background-color: #e9e9e9;
+.container {
+    background-color: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
 }
 
-/* プレイヤーの記号の色を定義 */
-.cell.X {
-    color: #e74c3c; /* 赤系 */
+h1 { color: #333; margin-bottom: 10px; }
+p { color: #666; margin-bottom: 30px; }
+
+/* メニューボタンのデザイン */
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
-.cell.O {
-    color: #2ecc71; /* 緑系 */
-}
-
-#reset-button {
-    /* リセットボタンのデザイン */
-    padding: 10px 20px;
-    font-size: 16px;
+.menu-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 10px;
+    padding: 15px;
+    color: white;
     cursor: pointer;
-    background-color: #3498db;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-align: left;
+}
+
+.menu-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(118, 75, 162, 0.4);
+}
+
+.btn-title {
+    display: block;
+    font-size: 1.4em;
+    font-weight: bold;
+}
+
+.btn-desc {
+    font-size: 0.9em;
+    opacity: 0.9;
+}
+
+/* ゲーム画面のデザイン */
+#message {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #007bff;
+    margin: 15px 0;
+    height: 1.5em;
+}
+
+.board {
+    display: grid;
+    gap: 8px;
+    margin: 0 auto 20px auto;
+    background-color: #333;
+    border: 5px solid #333;
+    border-radius: 5px;
+    /* JSで列数を制御するために変数を使う */
+    grid-template-columns: repeat(var(--col-num), 1fr);
+    width: fit-content;
+}
+
+.cell {
+    width: 70px;
+    height: 70px;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.5em;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+}
+
+.cell.X { color: #ff4757; }
+.cell.O { color: #2ed573; }
+.cell:hover:not(.X):not(.O) { background-color: #f1f2f6; }
+
+#back-button {
+    background-color: #747d8c;
     color: white;
     border: none;
-    border-radius: 5px;
-    transition: background-color 0.2s;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
 }
-
-#reset-button:hover {
-    background-color: #2980b9;
-}
+#back-button:hover { background-color: #57606f; }

@@ -1,70 +1,118 @@
-// script.js - 防御・攻撃型AI搭載版
+// script.js - 完全版
 
-// 1. ゲームの状態を管理する変数の定義
-let board = ['', '', '', '', '', '', '', '', '']; // 盤面の状態 (9マス)
-let currentPlayer = 'O'; // 現在のプレイヤー ('O'が人間、'X'がAI)
-let gameActive = true; // ゲームが進行中かどうか
+// ==========================================
+// 1. 変数と設定
+// ==========================================
+let currentSize = 3;    // 現在の盤面サイズ (3 or 4)
+let board = [];         // 盤面データ
+let gameActive = false;
+let currentPlayer = 'O';
+let winningLines = [];  // そのサイズにおける勝利パターンのリスト
 
-// プレイヤー定義
-const HUMAN_PLAYER = 'O';
-const AI_PLAYER = 'X';
+const HUMAN = 'O';
+const AI = 'X';
 
-// 2. HTML要素の取得
-const cells = document.querySelectorAll('.cell');
+// HTML要素
+const homeScreen = document.getElementById('home-screen');
+const gameScreen = document.getElementById('game-screen');
+const boardElement = document.getElementById('board');
 const messageElement = document.getElementById('message');
-const resetButton = document.getElementById('reset-button');
+const gameTitle = document.getElementById('game-title');
 
-// 3. 勝利条件の定義 (マスのインデックス 0~8 で考える)
-const winningConditions = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8], // 横
-    [0, 3, 6], [1, 4, 7], [2, 5, 8], // 縦
-    [0, 4, 8], [2, 4, 6]             // 斜め
-];
+// ==========================================
+// 2. 画面切り替えとゲーム開始
+// ==========================================
 
-// 4. マスに記号を配置し、見た目を更新する関数
-const handleCellPlayed = (clickedCell, clickedCellIndex) => {
-    // 盤面配列を更新
-    board[clickedCellIndex] = currentPlayer;
-    // 画面の見た目を更新
-    clickedCell.innerHTML = currentPlayer;
-    clickedCell.classList.add(currentPlayer); 
+// ゲームを開始する関数
+const startGame = (size) => {
+    currentSize = size;
+    gameTitle.textContent = `${size} × ${size} マッチ`;
+    
+    // 勝利パターンの計算 (縦・横・斜め)
+    calculateWinningLines(size);
+
+    // 画面切り替え
+    homeScreen.style.display = 'none';
+    gameScreen.style.display = 'block';
+
+    // 盤面の初期化
+    resetGame();
 };
 
-// 5. メッセージを更新する関数
-const updateMessage = (msg) => {
-    messageElement.innerHTML = msg;
+// ホームに戻る関数
+const goHome = () => {
+    gameScreen.style.display = 'none';
+    homeScreen.style.display = 'block';
+    gameActive = false;
 };
 
-// 6. 勝敗判定を行う関数 (勝利/引き分けが確定したら true を返す)
-const handleResultValidation = () => {
-    let roundWon = false; 
+// 盤面のリセットと生成
+const resetGame = () => {
+    board = Array(currentSize * currentSize).fill('');
+    gameActive = true;
+    currentPlayer = HUMAN;
+    messageElement.textContent = "あなたのターンです";
 
-    // 8つの勝利条件を一つずつチェック
-    for (let i = 0; i < 8; i++) {
-        const winCondition = winningConditions[i];
-        let a = board[winCondition[0]];
-        let b = board[winCondition[1]];
-        let c = board[winCondition[2]];
+    // HTMLの生成
+    boardElement.innerHTML = '';
+    // CSS変数にサイズを渡す (3列か4列か)
+    boardElement.style.setProperty('--col-num', currentSize);
 
-        if (a === '' || b === '' || c === '') {
-            continue;
-        }
+    for (let i = 0; i < board.length; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        cell.dataset.index = i;
+        cell.addEventListener('click', handleCellClick);
+        boardElement.appendChild(cell);
+    }
+};
 
-        if (a === b && b === c) {
-            roundWon = true;
-            break; 
+// ==========================================
+// 3. ゲームロジック (汎用)
+// ==========================================
+
+// クリック処理
+const handleCellClick = (e) => {
+    const idx = parseInt(e.target.dataset.index);
+
+    if (board[idx] !== '' || !gameActive || currentPlayer === AI) return;
+
+    makeMove(idx, HUMAN);
+
+    if (!checkGameOver()) {
+        currentPlayer = AI;
+        messageElement.textContent = "AIが考え中...";
+        setTimeout(aiTurn, 600); // 少し待ってからAIが動く
+    }
+};
+
+// 駒を置く処理
+const makeMove = (index, player) => {
+    board[index] = player;
+    const cell = boardElement.children[index];
+    cell.textContent = player;
+    cell.classList.add(player);
+};
+
+// 勝敗チェック
+const checkGameOver = () => {
+    // 1. 勝利判定
+    for (let line of winningLines) {
+        const [a, b, c, d] = line; // 4x4ならdまで、3x3ならcまで使う
+        
+        // そのラインの全てのマスが現在のプレイヤーと同じかチェック
+        const isWin = line.every(index => board[index] === currentPlayer);
+
+        if (isWin) {
+            messageElement.textContent = `${currentPlayer} の勝ちです！🎉`;
+            gameActive = false;
+            return true;
         }
     }
 
-    if (roundWon) {
-        updateMessage(`${currentPlayer}の勝ちです！🎉`);
-        gameActive = false; 
-        return true; 
-    }
-
-    let roundDraw = !board.includes('');
-    if (roundDraw) {
-        updateMessage(`引き分けです。🙌`);
+    // 2. 引き分け判定
+    if (!board.includes('')) {
+        messageElement.textContent = "引き分けです！🤝";
         gameActive = false;
         return true;
     }
@@ -72,142 +120,105 @@ const handleResultValidation = () => {
     return false;
 };
 
+// ==========================================
+// 4. AIロジック (賢い版)
+// ==========================================
+const aiTurn = () => {
+    if (!gameActive) return;
 
-// 7. 勝利または防御のマスを見つけるロジック
-// playerToCheckにはAI_PLAYER ('X') または HUMAN_PLAYER ('O') が入る
-const checkAndBlockWin = (playerToCheck) => {
-    // 勝利条件を一つずつチェック
-    for (const condition of winningConditions) {
-        let count = 0;
-        let emptyIndex = -1; // ここに打てば勝利/ブロックできるマス
+    let moveIndex = -1;
+
+    // 戦略1: AIが勝てる場所があれば取る (攻撃)
+    moveIndex = findBestMove(AI);
+
+    // 戦略2: 人間が勝ちそうなら邪魔する (防御)
+    if (moveIndex === -1) {
+        moveIndex = findBestMove(HUMAN);
+    }
+
+    // 戦略3: 中央を取る (重要)
+    if (moveIndex === -1) {
+        // 盤面の真ん中あたりのインデックスを計算
+        const center = Math.floor(board.length / 2);
+        // 4x4の場合は中央が4つあるので補正
+        const centers = currentSize === 3 ? [4] : [5, 6, 9, 10];
         
-        // 勝利条件の3つのマスをチェック
-        for (const index of condition) {
-            if (board[index] === playerToCheck) {
-                count++;
-            } else if (board[index] === '') {
-                emptyIndex = index;
+        for (let c of centers) {
+            if (board[c] === '') {
+                moveIndex = c;
+                break;
             }
         }
-        
-        // 既に2つ揃っていて、かつ残りの1つが空いていれば、そのマスを返す
-        if (count === 2 && emptyIndex !== -1) {
-            return emptyIndex;
-        }
-    }
-    return -1; // 見つからなかった場合
-};
-
-
-// 8. AI (防御/攻撃型) のターン処理
-const handleAITurn = () => {
-    if (!gameActive) {
-        return;
     }
 
-    // 1. 空いているマス（インデックス）を全て見つける
-    const availableIndices = [];
-    for (let i = 0; i < board.length; i++) {
-        if (board[i] === '') {
-            availableIndices.push(i);
+    // 戦略4: ランダム
+    if (moveIndex === -1) {
+        const emptyIndices = board.map((v, i) => v === '' ? i : null).filter(v => v !== null);
+        if (emptyIndices.length > 0) {
+            moveIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
         }
     }
 
-    if (availableIndices.length === 0) {
-        return; 
+    // 実行
+    if (moveIndex !== -1) {
+        makeMove(moveIndex, AI);
+        if (!checkGameOver()) {
+            currentPlayer = HUMAN;
+            messageElement.textContent = "あなたのターンです";
+        }
     }
-
-    let aiMoveIndex = -1; // AIが打つマスのインデックス
-
-    // ------------------------------------
-    // 【優先度 1位: 勝利チェック (攻撃)】
-    // ------------------------------------
-    aiMoveIndex = checkAndBlockWin(AI_PLAYER); 
-
-    // ------------------------------------
-    // 【優先度 2位: 防御チェック (人間をブロック)】
-    // ------------------------------------
-    if (aiMoveIndex === -1) {
-        aiMoveIndex = checkAndBlockWin(HUMAN_PLAYER);
-    }
-    
-    // ------------------------------------
-    // 【優先度 3位: 中央（4）が空いていれば取る】
-    // ------------------------------------
-    // 中央は最も有利なマスなので、ランダムの前にチェックする
-    if (aiMoveIndex === -1 && board[4] === '') {
-        aiMoveIndex = 4;
-    }
-
-    // ------------------------------------
-    // 【優先度 4位: ランダム】
-    // ------------------------------------
-    if (aiMoveIndex === -1) {
-        // ランダムに選ぶ
-        const randomIndex = Math.floor(Math.random() * availableIndices.length);
-        aiMoveIndex = availableIndices[randomIndex];
-    }
-
-    // ------------------------------------
-    // 最終的な手の実行
-    // ------------------------------------
-    const aiCell = cells[aiMoveIndex];
-
-    currentPlayer = AI_PLAYER; 
-    handleCellPlayed(aiCell, aiMoveIndex);
-
-    if (handleResultValidation()) {
-        return; 
-    }
-    
-    // ゲームが続く場合は、次の人間のターンに戻す
-    currentPlayer = HUMAN_PLAYER;
-    updateMessage(`${HUMAN_PLAYER}のターンです`); 
 };
 
-// 9. 人間プレイヤー ('O') のマスがクリックされたときの処理
-const handleCellClick = (e) => {
-    const clickedCell = e.target;
-    const clickedCellIndex = parseInt(clickedCell.getAttribute('data-index'));
+// 「あと1手で揃うライン」の空きマスを見つける関数
+const findBestMove = (player) => {
+    for (let line of winningLines) {
+        // そのラインにある自分の駒の数と、空きマスの数を数える
+        const playerCount = line.filter(i => board[i] === player).length;
+        const emptyCount = line.filter(i => board[i] === '').length;
 
-    // 無効なクリックをチェック
-    if (board[clickedCellIndex] !== '' || !gameActive || currentPlayer === AI_PLAYER) {
-        return;
+        // 「あと1つで完成」かつ「1つ空いている」場所を探す
+        // 3x3なら2つ揃って1つ空き、4x4なら3つ揃って1つ空き
+        if (playerCount === currentSize - 1 && emptyCount === 1) {
+            return line.find(i => board[i] === '');
+        }
     }
-
-    // 人間プレイヤーとして記号を配置
-    currentPlayer = HUMAN_PLAYER; 
-    handleCellPlayed(clickedCell, clickedCellIndex);
-    
-    // 勝敗を判定
-    if (handleResultValidation()) {
-        return; 
-    }
-
-    // AIのターンを開始 (0.5秒の遅延を持たせる)
-    updateMessage(`AI (${AI_PLAYER})が考え中です...`);
-    setTimeout(handleAITurn, 500); 
+    return -1;
 };
 
-// 10. ゲームをリセットする関数
-const handleRestartGame = () => {
-    // 状態を初期値に戻す
-    gameActive = true;
-    currentPlayer = HUMAN_PLAYER; // 必ず人間('O')からスタート
-    board = ['', '', '', '', '', '', '', '', ''];
+// ==========================================
+// 5. 勝利パターンの自動生成 (初期化時に実行)
+// ==========================================
+const calculateWinningLines = (size) => {
+    winningLines = [];
     
-    // メッセージと見た目をリセット
-    updateMessage('〇のターンです');
-    
-    cells.forEach(cell => {
-        cell.innerHTML = ''; 
-        cell.classList.remove(HUMAN_PLAYER, AI_PLAYER); 
-    });
+    // 横のライン
+    for (let i = 0; i < size; i++) {
+        const row = [];
+        for (let j = 0; j < size; j++) row.push(i * size + j);
+        winningLines.push(row);
+    }
+
+    // 縦のライン
+    for (let i = 0; i < size; i++) {
+        const col = [];
+        for (let j = 0; j < size; j++) col.push(j * size + i);
+        winningLines.push(col);
+    }
+
+    // 斜めのライン (左上↘)
+    const diag1 = [];
+    for (let i = 0; i < size; i++) diag1.push(i * size + i);
+    winningLines.push(diag1);
+
+    // 斜めのライン (右上↙)
+    const diag2 = [];
+    for (let i = 0; i < size; i++) diag2.push(i * size + (size - 1 - i));
+    winningLines.push(diag2);
 };
 
-// 11. イベントリスナーの設定
-// すべてのマスがクリックされたときに handleCellClick を実行
-cells.forEach(cell => cell.addEventListener('click', handleCellClick));
-
-// リセットボタンがクリックされたときに handleRestartGame を実行
-resetButton.addEventListener('click', handleRestartGame);
+// ==========================================
+// 6. イベント設定
+// ==========================================
+document.getElementById('btn-3x3').addEventListener('click', () => startGame(3));
+document.getElementById('btn-4x4').addEventListener('click', () => startGame(4));
+document.getElementById('back-button').addEventListener('click', goHome);
