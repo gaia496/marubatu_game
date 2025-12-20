@@ -9,16 +9,18 @@
 <body>
     <div class="container">
         <div id="home-screen">
-            <h1>🎮 オンライン 〇×ゲーム</h1>
-            <p id="role-display">接続中...</p>
+            <h1>🎮 合言葉で対戦！</h1>
+            <input type="text" id="room-input" placeholder="合言葉を決めて入力" style="width: 80%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ddd; font-size: 16px;">
+            <p id="role-display">友達と同じ言葉を入れてね</p>
+            
             <div class="menu-buttons">
                 <button id="btn-3x3" class="menu-btn">
-                    <span class="btn-title">3 × 3</span>
-                    <span class="btn-desc">基本モード</span>
+                    <span class="btn-title">3 × 3 マッチ</span>
+                    <span class="btn-desc">対戦を開始する</span>
                 </button>
                 <button id="btn-4x4" class="menu-btn">
-                    <span class="btn-title">4 × 4</span>
-                    <span class="btn-desc">難易度アップ</span>
+                    <span class="btn-title">4 × 4 マッチ</span>
+                    <span class="btn-desc">難しいモード</span>
                 </button>
             </div>
         </div>
@@ -27,7 +29,7 @@
             <h2 id="game-title"></h2>
             <div id="message"></div>
             <div id="board" class="board"></div>
-            <button id="back-button">🏠 ホームに戻る</button>
+            <button id="back-button">🏠 退出する</button>
         </div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
